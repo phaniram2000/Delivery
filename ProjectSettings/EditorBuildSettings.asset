@@ -5,7 +5,16 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
+  - enabled: 1
+    path: Assets/PROMETEO - Car Controller/Scenes/Mobile Devices Demo.unity
+    guid: 136749ef7a3080548b1664e996c901e6
+  - enabled: 1
+    path: Assets/Scenes/Level 2.unity
+    guid: 53bae953dab4fae4b8391b056f361f9d
+  - enabled: 1
+    path: Assets/Scenes/Level 1.unity
+    guid: d1df4b61430ccaf4892014e7278bc4dc
+  - enabled: 1
+    path: Assets/Simple Bicycle Physics/Scenes/Mobile Controls/MobileBicycleStandardSetup.unity
+    guid: a863896b1caf8fa4f9c671ac74618c63
   m_configObjects: {}
