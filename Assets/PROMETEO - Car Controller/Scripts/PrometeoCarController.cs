@@ -5,26 +5,15 @@ using UnityEngine.UI;
 public class PrometeoCarController : MonoBehaviour
 {
     [Space(20)] public DynamicJoystick joystick;
-
-    [Space(10)] [Range(20, 190)] public int maxSpeed = 90;
-
+    [Space(10)] [Range(0, 190)] public int maxSpeed = 90;
     [Range(10, 120)] public int maxReverseSpeed = 45;
-
-    [Range(1, 50)] public int
-        accelerationMultiplier = 2;
-
+    [Range(1, 50)] public int accelerationMultiplier = 2;
     [Space(10)] [Range(10, 45)] public int maxSteeringAngle = 27;
-
     [Range(0.1f, 1f)] public float steeringSpeed = 0.5f;
     [Space(10)] [Range(100, 600)] public int brakeForce = 350;
-
-    [Range(1, 10)] public int decelerationMultiplier = 2;
-
+    [Range(1, 100)] public int decelerationMultiplier = 2;
     [Range(1, 10)] public int handbrakeDriftMultiplier = 5;
-
-    [Space(10)] public Vector3
-        bodyMassCenter;
-
+    [Space(10)] public Vector3 bodyMassCenter;
     public GameObject frontLeftMesh;
     public WheelCollider frontLeftCollider;
     [Space(10)] public GameObject frontRightMesh;
@@ -33,31 +22,18 @@ public class PrometeoCarController : MonoBehaviour
     public WheelCollider rearLeftCollider;
     [Space(10)] public GameObject rearRightMesh;
     public WheelCollider rearRightCollider;
-
     [Space(20)] [Space(10)] public bool useEffects = false;
-
     public ParticleSystem RLWParticleSystem;
     public ParticleSystem RRWParticleSystem;
-
     [Space(10)] public TrailRenderer RLWTireSkid;
-
     public TrailRenderer RRWTireSkid;
-
     [Space(20)] [Space(10)] public bool useUI = false;
-
     public Text carSpeedText;
-
     [Space(20)] [Space(10)] public bool useSounds = false;
-
     public AudioSource carEngineSound;
-
-    public AudioSource
-        tireScreechSound;
-
+    public AudioSource tireScreechSound;
     float initialCarEngineSoundPitch;
-
     [Space(20)] [Space(10)] public bool useTouchControls = false;
-
     public GameObject throttleButton;
     PrometeoTouchInput throttlePTI;
     public GameObject reverseButton;
@@ -68,11 +44,9 @@ public class PrometeoCarController : MonoBehaviour
     PrometeoTouchInput turnLeftPTI;
     public GameObject handbrakeButton;
     PrometeoTouchInput handbrakePTI;
-
     [HideInInspector] public float carSpeed;
     [HideInInspector] public bool isDrifting;
     [HideInInspector] public bool isTractionLocked;
-
     Rigidbody carRigidbody;
     float steeringAxis;
     float throttleAxis;
@@ -80,9 +54,10 @@ public class PrometeoCarController : MonoBehaviour
     float localVelocityZ;
     float localVelocityX;
     bool deceleratingCar;
-
     bool touchControlsSetup = false;
-
+    [SerializeField] private bool UseSteering;
+    public bool UseHandbrake;
+    private bool forward;
     WheelFrictionCurve FLwheelFriction;
     float FLWextremumSlip;
     WheelFrictionCurve FRwheelFriction;
@@ -90,16 +65,34 @@ public class PrometeoCarController : MonoBehaviour
     WheelFrictionCurve RLwheelFriction;
     float RLWextremumSlip;
     WheelFrictionCurve RRwheelFriction;
-
     private float RRWextremumSlip;
+    private UiManager _uiManager;
+    private GearShift _GearShift;
 
+    private float horizontalInput;
+    private float steeringAngle;
+
+    public bool Steering
+    {
+        get { return UseSteering; }
+        private set { UseSteering = value; }
+    }
+
+    public float SteeringAngle
+    {
+        get { return steeringAngle; }
+        private set { steeringAngle = value; }
+    }
 
     void Start()
     {
         forward = true;
         carRigidbody = gameObject.GetComponent<Rigidbody>();
         carRigidbody.centerOfMass = bodyMassCenter;
+        _uiManager = FindObjectOfType<UiManager>();
+        _GearShift = FindObjectOfType<GearShift>();
         WheelSetup();
+        JoyStickDesider();
         if (carEngineSound != null)
         {
             initialCarEngineSoundPitch = carEngineSound.pitch;
@@ -184,123 +177,154 @@ public class PrometeoCarController : MonoBehaviour
         carSpeed = (2 * Mathf.PI * frontLeftCollider.radius * frontLeftCollider.rpm * 60) / 1000;
         localVelocityX = transform.InverseTransformDirection(carRigidbody.velocity).x;
         localVelocityZ = transform.InverseTransformDirection(carRigidbody.velocity).z;
-
         if (useTouchControls && touchControlsSetup)
         {
-            if (throttlePTI.buttonPressed && forward)
-            {
-                CancelInvoke("DecelerateCar");
-                deceleratingCar = false;
-                GoForward();
-            }
-
-            if (reversePTI.buttonPressed && !forward)
-            {
-                CancelInvoke("DecelerateCar");
-                deceleratingCar = false;
-                GoReverse();
-            }
-
-            if (turnLeftPTI.buttonPressed || joystick.Horizontal < 0.1f)
-            {
-                TurnLeft();
-            }
-
-            if (turnRightPTI.buttonPressed || joystick.Horizontal > 0)
-            {
-                TurnRight();
-            }
-
-            if (handbrakePTI.buttonPressed)
-            {
-                CancelInvoke("DecelerateCar");
-                deceleratingCar = false;
-                Handbrake();
-            }
-
-            if (!handbrakePTI.buttonPressed)
-            {
-                RecoverTraction();
-            }
-
-            if ((!throttlePTI.buttonPressed && !reversePTI.buttonPressed))
-            {
-                ThrottleOff();
-            }
-
-            if ((!reversePTI.buttonPressed && !throttlePTI.buttonPressed) && !handbrakePTI.buttonPressed &&
-                !deceleratingCar)
-            {
-                InvokeRepeating("DecelerateCar", 0f, 0.1f);
-                deceleratingCar = true;
-            }
-
-            if (!turnLeftPTI.buttonPressed && !turnRightPTI.buttonPressed && steeringAxis != 0f)
-            {
-                ResetSteeringAngle();
-            }
+            TouchControls();
         }
         else
         {
-            if (Input.GetKey(KeyCode.W) || joystick.Vertical > 0.1f)
-            {
-                Debug.Log("MoveFront");
-                CancelInvoke("DecelerateCar");
-                deceleratingCar = false;
-                GoForward();
-            }
-
-            if (Input.GetKey(KeyCode.S))
-            {
-                CancelInvoke("DecelerateCar");
-                deceleratingCar = false;
-                GoReverse();
-            }
-
-            TurnLeft();
-            TurnRight();
-            if (Input.GetKey(KeyCode.A) || joystick.Horizontal < 0)
-            {
-            }
-
-            if (Input.GetKey(KeyCode.D) || joystick.Horizontal > 0.1f)
-            {
-            }
-
-            if (Input.GetKey(KeyCode.Space))
-            {
-                CancelInvoke("DecelerateCar");
-                deceleratingCar = false;
-                Handbrake();
-            }
-
-            if (Input.GetKeyUp(KeyCode.Space))
-            {
-                RecoverTraction();
-            }
-
-            if ((!Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W)) && joystick.Vertical == 0)
-            {
-                ThrottleOff();
-            }
-
-            if ((!Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W)) && !Input.GetKey(KeyCode.Space) &&
-                joystick.Vertical == 0 &&
-                !deceleratingCar)
-            {
-                InvokeRepeating("DecelerateCar", 0f, 0.1f);
-                deceleratingCar = true;
-            }
-
-            if (!Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D) && joystick.Horizontal == 0 && steeringAxis != 0f)
-            {
-                ResetSteeringAngle();
-            }
+            KeyBoardControlls();
         }
 
 
         AnimateWheelMeshes();
     }
+
+    private void JoyStickDesider()
+    {
+        if (Steering)
+        {
+            throttleButton = _uiManager.WheelControl;
+            reverseButton = _uiManager.WheelControl;
+            turnRightButton = _uiManager.WheelControl;
+            turnLeftButton = _uiManager.WheelControl;
+            handbrakeButton = _uiManager.WheelControl;
+        }
+        else
+        {
+            throttleButton = _uiManager.Joystick;
+            reverseButton = _uiManager.Joystick;
+            turnRightButton = _uiManager.Joystick;
+            turnLeftButton = _uiManager.Joystick;
+            handbrakeButton = _uiManager.Joystick;
+        }
+    }
+
+
+    private void TouchControls()
+    {
+        if (throttlePTI.buttonPressed && !_GearShift.MoveBack)
+        {
+            CancelInvoke("DecelerateCar");
+            deceleratingCar = false;
+            GoForward();
+        }
+
+        if (reversePTI.buttonPressed && _GearShift.MoveBack)
+        {
+            CancelInvoke("DecelerateCar");
+            deceleratingCar = false;
+            GoReverse();
+        }
+
+        if (turnLeftPTI.buttonPressed || joystick.Horizontal < 0.1f)
+        {
+            TurnLeft();
+        }
+
+        if (turnRightPTI.buttonPressed || joystick.Horizontal > 0)
+        {
+            TurnRight();
+        }
+
+        if (handbrakePTI.buttonPressed && UseHandbrake)
+        {
+            CancelInvoke("DecelerateCar");
+            deceleratingCar = false;
+            Handbrake();
+        }
+
+        if (!handbrakePTI.buttonPressed)
+        {
+            RecoverTraction();
+        }
+
+        if ((!throttlePTI.buttonPressed && !reversePTI.buttonPressed))
+        {
+            ThrottleOff();
+        }
+
+        if ((!reversePTI.buttonPressed && !throttlePTI.buttonPressed) && !handbrakePTI.buttonPressed &&
+            !deceleratingCar)
+        {
+            InvokeRepeating("DecelerateCar", 0f, 0.1f);
+            deceleratingCar = true;
+        }
+
+        if (!turnLeftPTI.buttonPressed && !turnRightPTI.buttonPressed && steeringAxis != 0f)
+        {
+            ResetSteeringAngle();
+        }
+    }
+
+    private void KeyBoardControlls()
+    {
+        if (Input.GetKey(KeyCode.W) || joystick.Vertical > 0.1f)
+        {
+            Debug.Log("MoveFront");
+            CancelInvoke("DecelerateCar");
+            deceleratingCar = false;
+            GoForward();
+        }
+
+        if (Input.GetKey(KeyCode.S))
+        {
+            CancelInvoke("DecelerateCar");
+            deceleratingCar = false;
+            GoReverse();
+        }
+
+        TurnLeft();
+        TurnRight();
+        if (Input.GetKey(KeyCode.A) || joystick.Horizontal < 0)
+        {
+        }
+
+        if (Input.GetKey(KeyCode.D) || joystick.Horizontal > 0.1f)
+        {
+        }
+
+        if (Input.GetKey(KeyCode.Space))
+        {
+            CancelInvoke("DecelerateCar");
+            deceleratingCar = false;
+            Handbrake();
+        }
+
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            RecoverTraction();
+        }
+
+        if ((!Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W)) && joystick.Vertical == 0)
+        {
+            ThrottleOff();
+        }
+
+        if ((!Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W)) && !Input.GetKey(KeyCode.Space) &&
+            joystick.Vertical == 0 &&
+            !deceleratingCar)
+        {
+            InvokeRepeating("DecelerateCar", 0f, 0.1f);
+            deceleratingCar = true;
+        }
+
+        if (!Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D) && joystick.Horizontal == 0 && steeringAxis != 0f)
+        {
+            ResetSteeringAngle();
+        }
+    }
+
     public void CarSounds()
     {
         if (useSounds)
@@ -345,10 +369,20 @@ public class PrometeoCarController : MonoBehaviour
         }
     }
 
+
     public void TurnLeft()
     {
-        float horizontalInput = SimpleInput.GetAxis("Horizontal");
-        var steeringAngle = horizontalInput * maxSteeringAngle;
+        if (Steering)
+        {
+            horizontalInput = SimpleInput.GetAxis("Horizontal");
+        }
+
+        if (!Steering)
+        {
+            horizontalInput = joystick.Horizontal;
+        }
+
+        steeringAngle = horizontalInput * maxSteeringAngle;
 
         frontLeftCollider.steerAngle = steeringAngle;
         frontRightCollider.steerAngle = steeringAngle;
@@ -356,9 +390,18 @@ public class PrometeoCarController : MonoBehaviour
 
     public void TurnRight()
     {
-        float horizontalInput = SimpleInput.GetAxis("Horizontal");
+        //  float horizontalInput = SimpleInput.GetAxis("Horizontal");
+        if (Steering)
+        {
+            horizontalInput = SimpleInput.GetAxis("Horizontal");
+        }
 
-        var steeringAngle = horizontalInput * maxSteeringAngle;
+        if (!Steering)
+        {
+            horizontalInput = joystick.Horizontal;
+        }
+
+        steeringAngle = horizontalInput * maxSteeringAngle;
 
         frontLeftCollider.steerAngle = steeringAngle;
         frontRightCollider.steerAngle = steeringAngle;
@@ -383,40 +426,6 @@ public class PrometeoCarController : MonoBehaviour
         var steeringAngle = steeringAxis * maxSteeringAngle;
         frontLeftCollider.steerAngle = Mathf.Lerp(frontLeftCollider.steerAngle, steeringAngle, steeringSpeed);
         frontRightCollider.steerAngle = Mathf.Lerp(frontRightCollider.steerAngle, steeringAngle, steeringSpeed);
-    }
-
-    void AnimateWheelMeshes()
-    {
-        try
-        {
-            Quaternion FLWRotation;
-            Vector3 FLWPosition;
-            frontLeftCollider.GetWorldPose(out FLWPosition, out FLWRotation);
-            frontLeftMesh.transform.position = FLWPosition;
-            frontLeftMesh.transform.rotation = FLWRotation;
-
-            Quaternion FRWRotation;
-            Vector3 FRWPosition;
-            frontRightCollider.GetWorldPose(out FRWPosition, out FRWRotation);
-            frontRightMesh.transform.position = FRWPosition;
-            frontRightMesh.transform.rotation = FRWRotation;
-
-            Quaternion RLWRotation;
-            Vector3 RLWPosition;
-            rearLeftCollider.GetWorldPose(out RLWPosition, out RLWRotation);
-            rearLeftMesh.transform.position = RLWPosition;
-            rearLeftMesh.transform.rotation = RLWRotation;
-
-            Quaternion RRWRotation;
-            Vector3 RRWPosition;
-            rearRightCollider.GetWorldPose(out RRWPosition, out RRWRotation);
-            rearRightMesh.transform.position = RRWPosition;
-            rearRightMesh.transform.rotation = RRWRotation;
-        }
-        catch (Exception ex)
-        {
-            Debug.LogWarning(ex);
-        }
     }
 
     public void GoForward()
@@ -510,6 +519,41 @@ public class PrometeoCarController : MonoBehaviour
             }
         }
     }
+
+    void AnimateWheelMeshes()
+    {
+        try
+        {
+            Quaternion FLWRotation;
+            Vector3 FLWPosition;
+            frontLeftCollider.GetWorldPose(out FLWPosition, out FLWRotation);
+            frontLeftMesh.transform.position = FLWPosition;
+            frontLeftMesh.transform.rotation = FLWRotation;
+
+            Quaternion FRWRotation;
+            Vector3 FRWPosition;
+            frontRightCollider.GetWorldPose(out FRWPosition, out FRWRotation);
+            frontRightMesh.transform.position = FRWPosition;
+            frontRightMesh.transform.rotation = FRWRotation;
+
+            Quaternion RLWRotation;
+            Vector3 RLWPosition;
+            rearLeftCollider.GetWorldPose(out RLWPosition, out RLWRotation);
+            rearLeftMesh.transform.position = RLWPosition;
+            rearLeftMesh.transform.rotation = RLWRotation;
+
+            Quaternion RRWRotation;
+            Vector3 RRWPosition;
+            rearRightCollider.GetWorldPose(out RRWPosition, out RRWRotation);
+            rearRightMesh.transform.position = RRWPosition;
+            rearRightMesh.transform.rotation = RRWRotation;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning(ex);
+        }
+    }
+
 
     public void ThrottleOff()
     {
@@ -720,19 +764,6 @@ public class PrometeoCarController : MonoBehaviour
         }
     }
 
-    private bool forward;
-
-    public void ReversGear()
-    {
-        if (forward)
-        {
-            forward = false;
-        }
-        else
-        {
-            forward = true;
-        }
-    }
 
     private void WheelSetup()
     {

@@ -3,7 +3,32 @@ guid: 6838c25075fe5cf42b70cc13753024be
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Cabin
+    second: {fileID: 2100000, guid: 25414051c3b310246bc4c5727a91db82, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CargoBed
+    second: {fileID: 2100000, guid: a06a304dfce67904a996d8fc116849cb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Frame
+    second: {fileID: 2100000, guid: 34970d18fa651d749ba1e0bac70521e0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Glass
+    second: {fileID: 2100000, guid: 331d59096bd56a94db01c4ff64ee9e0f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wheels
+    second: {fileID: 2100000, guid: c407b3f39b88eaa41bdaf428379890e7, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
