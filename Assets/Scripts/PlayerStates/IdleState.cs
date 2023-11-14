@@ -1,23 +1,22 @@
-using StateMachine;
+using UnityEngine;
 
-public class IdleState : InputStateBase
+public class IdleState : MonoBehaviour, ITruckState
 {
-    
+    private Truck truck;
 
-    public override void OnEnter()
+    public void EnterState(Truck truck)
     {
-     
+        this.truck = truck;
+        // Implement actions when entering Idle state
     }
 
-    public override void Execute()
+    public void UpdateState()
     {
-      
+        // Implement Idle state behavior
     }
 
-    public override void OnExit()
+    public void ExitState()
     {
-       
+        // Implement actions when exiting Idle state
     }
-
-    
 }

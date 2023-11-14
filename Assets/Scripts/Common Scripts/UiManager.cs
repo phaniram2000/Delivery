@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,10 +7,27 @@ using UnityEngine.UI;
 public class UiManager : MonoBehaviour
 {
     public GameObject WheelControl, Joystick;
-    private PrometeoCarController MainControl;
+    private Truck MainControl;
+
+    private void OnEnable()
+    {
+        GameEvents.TapToPlay += OnTapToPlay;
+
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.TapToPlay -= OnTapToPlay;
+
+    }
+    private void OnTapToPlay()
+    {
+        
+    }
+
     private void Start()
     {
-        MainControl = FindObjectOfType<PrometeoCarController>();
+        MainControl = FindObjectOfType<Truck>();
         JoyStickDesider();
     }
 
@@ -24,6 +42,4 @@ public class UiManager : MonoBehaviour
             Joystick.SetActive(true);
         }
     }
-
-  
 }

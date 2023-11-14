@@ -15,18 +15,24 @@ public class HumanDropper : MonoBehaviour
     public GameObject goods;
     public Transform dropPoint;
     public GameObject goodsDropPoint;
-
-    private DropperState _dropperState;
+    public GameObject truck; // Reference to the truck game object
+    public Vector3 Botposition;
+    public DropperState _dropperState;
     private static readonly int Walk = Animator.StringToHash("Walk");
 
     void Start()
     {
-        Initialize();
+        truck = GameObject.FindWithTag("Truck");
+        Botposition.y = botAnimation.transform.position.y;
+        _dropperState = DropperState.WaitingForTruck;
+    }
+
+    void Update()
+    {
     }
 
     private void Initialize()
     {
-        _dropperState = DropperState.WaitingForTruck;
         SwitchState(DropperState.TruckArrived);
         StateDecider();
     }
@@ -56,12 +62,37 @@ public class HumanDropper : MonoBehaviour
     {
         var sequence = DOTween.Sequence();
         botAnimation.SetBool(Walk, true);
+        if (truck != null)
+        {
+            // Change the truck state to PickupState
+            truck.GetComponent<Truck>().SwitchState(new PickUpstate());
+
+            // Find a drop point near the truck
+            dropPoint = FindDropPointNearTruck(truck.transform.position);
+        }
+
         sequence.Append(botAnimation.transform.DOMove(dropPoint.position, 0.5f).SetEase(Ease.Linear));
         sequence.AppendCallback(() =>
         {
             SwitchState(DropperState.DroppedGoods);
             AtDropPoint();
         });
+    }
+
+    private Transform FindDropPointNearTruck(Vector3 truckPosition)
+    {
+        
+        float xOffset = Botposition.x;
+
+        float zOffset = Botposition.z;
+
+        Vector3 offset = new Vector3(xOffset, Botposition.y, zOffset);
+        Vector3 dropPointPosition = new Vector3(truckPosition.x + truck.transform.TransformDirection(offset).x,
+            Botposition.y, truckPosition.z + truck.transform.TransformDirection(offset).z);
+        GameObject newDropPoint = new GameObject("DynamicDropPoint");
+        newDropPoint.transform.position = dropPointPosition;
+
+        return newDropPoint.transform;
     }
 
     private void AtDropPoint()
@@ -81,12 +112,29 @@ public class HumanDropper : MonoBehaviour
     private void DropGoodsAnimation()
     {
         goods.transform.DOJump(goodsDropPoint.transform.position, 10, 1, 0.5f)
-            .OnComplete(() => { FinalizeGoodsDrop(); });
+            .OnComplete(() =>
+            {
+                FinalizeGoodsDrop();
+                if (truck != null)
+                {
+                    // Change the truck state to PickupState
+                    truck.GetComponent<Truck>().SwitchState(new DriveState());
+                }
+            });
     }
 
     private void FinalizeGoodsDrop()
     {
         goods.GetComponent<Collider>().isTrigger = false;
         goods.GetComponent<Rigidbody>().isKinematic = true;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Truck"))
+        {
+            Initialize();
+            GetComponent<Collider>().enabled = false;
+        }
     }
 }

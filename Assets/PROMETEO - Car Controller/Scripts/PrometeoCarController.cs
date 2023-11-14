@@ -258,6 +258,8 @@ public class PrometeoCarController : MonoBehaviour
             !deceleratingCar)
         {
             InvokeRepeating("DecelerateCar", 0f, 0.1f);
+            CustomDebug.Log("breaking");
+
             deceleratingCar = true;
         }
 

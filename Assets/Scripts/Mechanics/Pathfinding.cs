@@ -23,7 +23,5 @@ public class Pathfinding : MonoBehaviour
       m_Agenet.CalculatePath(Destinationobject.transform.position, M_navMeshPath);
       LineRenderer.positionCount = M_navMeshPath.corners.Length;
       LineRenderer.SetPositions(M_navMeshPath.corners);
-      
-      
    }
 }
