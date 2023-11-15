@@ -8,11 +8,11 @@ public class TrajectoryPrediction : MonoBehaviour
     public float maxSteeringAngle = 30.0f; // Maximum steering angle in degrees
     public float steeringAngleDamping = 0.2f; // Adjust damping factor
     private Vector3[] linePositions;
-    private PrometeoCarController MainController;
+    private Truck MainController;
 
     private void Start()
     {
-        MainController = FindObjectOfType<PrometeoCarController>();
+        MainController = FindObjectOfType<Truck>();
         lineRenderer.positionCount = numPositions;
         linePositions = new Vector3[numPositions];
     }

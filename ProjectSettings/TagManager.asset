@@ -8,16 +8,18 @@ TagManager:
   - Pickup
   - Truck
   - DropPoint
+  - Road
+  - Nav
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Road
   - Water
   - UI
-  - 
-  - 
-  - 
+  - Nav
+  - Player
+  - MiniMap
   - 
   - 
   - 

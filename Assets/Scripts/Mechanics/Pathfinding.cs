@@ -1,5 +1,3 @@
-using System;
-using Dreamteck.Splines.Primitives;
 using UnityEngine;
 using UnityEngine.AI;
 

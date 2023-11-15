@@ -7,7 +7,7 @@ public class GearShift : MonoBehaviour
 {
     private Camera mainCamera;
     private bool moveback = false;
-
+    public Vector3 ReversGearAngle, ForwardGearAngle;
     public bool MoveBack
     {
         get { return moveback; }
@@ -52,12 +52,13 @@ public class GearShift : MonoBehaviour
         if (MoveBack)
         {
             MoveBack = false;
-            transform.DOLocalRotate(new Vector3(25, 0, 0), .3f);
+            transform.DOLocalRotate(ForwardGearAngle, .3f);
         }
         else if (!MoveBack)
         {
             MoveBack = true;
-            transform.DOLocalRotate(new Vector3(-25, 0, 0), .3f);
+            transform.DOLocalRotate(ReversGearAngle, .3f);
         }
+        
     }
 }
