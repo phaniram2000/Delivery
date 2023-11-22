@@ -225,7 +225,7 @@ MonoBehaviour:
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 511
 --- !u!1001 &377207301902797949
 PrefabInstance:
   m_ObjectHideFlags: 0

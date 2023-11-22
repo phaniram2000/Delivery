@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using UnityEngine.UI;
 
 public class DriveState : MonoBehaviour, ITruckState
 {
@@ -24,7 +25,6 @@ public class DriveState : MonoBehaviour, ITruckState
         AnimateWheelMeshes();
     }
 
-    
 
     private void TouchControls()
     {
@@ -73,8 +73,8 @@ public class DriveState : MonoBehaviour, ITruckState
             !truck.handbrakePTI.buttonPressed &&
             !truck.deceleratingCar)
         {
-            truck.InvokeRepeating("DecelerateCar", 0f, 0.1f);
-            truck.deceleratingCar = true;
+            truck.InvokeRepeating("DecelerateCar", 0f, 0.2f);
+            //truck.deceleratingCar = true;
         }
 
         if (!truck.turnLeftPTI.buttonPressed && !truck.turnRightPTI.buttonPressed && truck.steeringAxis != 0f)
@@ -187,6 +187,10 @@ public class DriveState : MonoBehaviour, ITruckState
                 truck.rearRightCollider.motorTorque = 0;
             }
         }
+
+        updateFuelGate();
+        truck.BreakLight_L.SetActive(false);
+        truck.BreakLight_R.SetActive(false);
     }
 
     public void GoReverse()
@@ -233,6 +237,10 @@ public class DriveState : MonoBehaviour, ITruckState
                 truck.rearRightCollider.motorTorque = 0;
             }
         }
+
+        updateFuelGate();
+        truck.BreakLight_L.SetActive(false);
+        truck.BreakLight_R.SetActive(false);
     }
 
     void AnimateWheelMeshes()
@@ -443,6 +451,23 @@ public class DriveState : MonoBehaviour, ITruckState
             truck.driftingAxis = 0f;
         }
     }
+
+    private void updateFuelGate()
+    {
+        if (truck.FuelGage.value > 0)
+        {
+            // Decrease the slider value gradually over time
+            truck.FuelGage.value -= truck.fuelConsumption_Rate * Time.deltaTime;
+            truck.SliderColorDesider();
+        }
+        else
+        {
+            truck.SwitchState(new OutOfFuelState());
+        }
+    }
+
+  
+
 
     public void ExitState()
     {

@@ -59,6 +59,6 @@ public class GearShift : MonoBehaviour
             MoveBack = true;
             transform.DOLocalRotate(ReversGearAngle, .3f);
         }
-        
+        Vibration.Vibrate(30);
     }
 }

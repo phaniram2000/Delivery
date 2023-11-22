@@ -17,6 +17,7 @@ public class DroppingGoodsState : MonoBehaviour, ITruckState
 
     public void ExitState()
     {
+        
         // Implement actions when exiting DroppingGoods state
     }
 }

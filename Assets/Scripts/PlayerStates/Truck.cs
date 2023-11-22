@@ -1,5 +1,7 @@
 using System;
+using DG.Tweening;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class Truck : MonoBehaviour
@@ -9,7 +11,7 @@ public class Truck : MonoBehaviour
     [Space(10)] [Range(0, 190)] public int maxSpeed = 90;
     [Range(10, 120)] public int maxReverseSpeed = 45;
     [Range(1, 50)] public int accelerationMultiplier = 2;
-    [Space(10)] [Range(10, 45)] public int maxSteeringAngle = 27;
+    [Space(10)] [Range(10, 90)] public int maxSteeringAngle = 27;
     [Range(0.1f, 1f)] public float steeringSpeed = 0.5f;
     [Space(10)] [Range(100, 600)] public int brakeForce = 350;
     [Range(1, 100)] public int decelerationMultiplier = 2;
@@ -71,12 +73,17 @@ public class Truck : MonoBehaviour
     internal GearShift _GearShift;
     internal float horizontalInput;
     internal float steeringAngle;
+    public GameObject Collided_Fx;
+    public GameObject BreakLight_L, BreakLight_R;
 
     public bool Steering
     {
         get { return UseSteering; }
         private set { UseSteering = value; }
     }
+
+    public float fuelConsumption_Rate;
+    public Slider FuelGage;
 
     public float SteeringAngle
     {
@@ -92,16 +99,19 @@ public class Truck : MonoBehaviour
     private void OnDisable()
     {
         GameEvents.TapToPlay -= OnTapToPlay;
+        SaveRequriedData();
     }
 
     private void Awake()
     {
         Application.targetFrameRate = 300;
+        Vibration.Init();
     }
 
     void Start()
     {
-        SwitchState(new DriveState());
+        InitialFuelLEvel();
+        SwitchState(new IdleState());
         forward = true;
         carRigidbody = gameObject.GetComponent<Rigidbody>();
         carRigidbody.centerOfMass = bodyMassCenter;
@@ -187,6 +197,7 @@ public class Truck : MonoBehaviour
     {
         // Perform actions based on the current state
         currentState.UpdateState();
+        if (!HandleTapToPlay()) return;
     }
 
 
@@ -208,6 +219,7 @@ public class Truck : MonoBehaviour
 
     private void OnTapToPlay()
     {
+        CustomDebug.Log("Taptoplay");
     }
 
     public void DecelerateCar()
@@ -240,6 +252,9 @@ public class Truck : MonoBehaviour
             carRigidbody.velocity = Vector3.zero;
             CancelInvoke("DecelerateCar");
         }
+
+        BreakLight_L.SetActive(true);
+        BreakLight_R.SetActive(true);
     }
 
     private void JoyStickDesider()
@@ -336,6 +351,88 @@ public class Truck : MonoBehaviour
                 tireScreechSound.Stop();
             }
         }
+    }
+
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.gameObject.CompareTag("Obs"))
+        {
+            Instantiate(Collided_Fx, other.contacts[0].point, Quaternion.identity);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("DropPoint"))
+        {
+            DOVirtual.DelayedCall(.8f, (() => { SwitchState(new DroppingGoodsState()); }));
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject.CompareTag("FuelStation"))
+        {
+            if (Mathf.RoundToInt(carSpeed) <= 0)
+            {
+                FuelGage.value += .1f * Time.deltaTime;
+                SliderColorDesider();
+            }
+        }
+    }
+
+
+    private bool _hasTappedToPlay;
+
+    private bool HandleTapToPlay()
+    {
+        if (_hasTappedToPlay) return true;
+        if (!HasTappedOverUi()) return false;
+        transform.tag = "Player";
+        _hasTappedToPlay = true;
+        GameEvents.InvokeTapToPlay();
+        SwitchState(new DriveState());
+        return true;
+    }
+
+    private static bool HasTappedOverUi()
+    {
+        if (!InputExtensions.GetFingerDown()) return false;
+        if (!EventSystem.current)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    internal void InitialFuelLEvel()
+    {
+        var fuellevel = TruckData.GetFuelData();
+        FuelGage.value = fuellevel;
+        SliderColorDesider();
+    }
+
+    // ReSharper disable Unity.PerformanceAnalysis
+    internal void SaveRequriedData()
+    {
+        var FuelLevel = FuelGage.value;
+        TruckData.SetFuelData(FuelLevel);
+    }
+
+    internal void SliderColorDesider()
+    {
+        Color gradientColor = Color.Lerp(Color.red, Color.green, FuelGage.normalizedValue);
+        FuelGage.fillRect.GetComponent<Image>().color = gradientColor;
+    }
+
+
+    //Debug 
+    public void refuel()
+    {
+        FuelGage.value = 1;
+        SliderColorDesider();
     }
 }
 

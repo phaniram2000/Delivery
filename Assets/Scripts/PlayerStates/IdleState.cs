@@ -12,11 +12,13 @@ public class IdleState : MonoBehaviour, ITruckState
 
     public void UpdateState()
     {
-        // Implement Idle state behavior
+        truck.InvokeRepeating("DecelerateCar", 0f, 0.1f);
+        truck.deceleratingCar = true;
     }
 
     public void ExitState()
     {
+        
         // Implement actions when exiting Idle state
     }
 }
