@@ -462,7 +462,7 @@ public class DriveState : MonoBehaviour, ITruckState
         }
         else
         {
-            truck.SwitchState(new OutOfFuelState());
+           // truck.SwitchState(new OutOfFuelState());
         }
     }
 

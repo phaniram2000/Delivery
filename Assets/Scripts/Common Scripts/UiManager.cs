@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class UiManager : MonoBehaviour
 {
@@ -15,13 +16,8 @@ public class UiManager : MonoBehaviour
     [SerializeField] private GameObject lost;
     [SerializeField] private Button next;
     [SerializeField] private Button restart;
-    [SerializeField] private Sprite lowFuel;
-    [SerializeField] private Sprite fullFuel;
-    [SerializeField] private Image FuelIcon;
-    [SerializeField] private Slider FuelGauge;
-
-    private const float LowFuelThreshold = 0.3f;
     private const int VibrationIntensity = 20;
+
 
     private void OnEnable()
     {
@@ -62,7 +58,10 @@ public class UiManager : MonoBehaviour
 
     private void Update()
     {
-        CheckFuelStatus();
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            NextLevel();
+        }
     }
 
     private void OnGameWin()
@@ -71,25 +70,23 @@ public class UiManager : MonoBehaviour
         IngameUI.SetActive(false);
     }
 
-    private void CheckFuelStatus()
-    {
-        FuelIcon.sprite = IsFuelLow ? lowFuel : fullFuel;
-
-        var fuelIconAnimator = FuelIcon.GetComponent<Animator>();
-        if (fuelIconAnimator != null)
-        {
-            fuelIconAnimator.enabled = IsFuelLow;
-        }
-
-        if (!IsFuelLow)
-        {
-            FuelIcon.rectTransform.localScale = Vector3.one;
-        }
-    }
 
     private void NextLevel()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        // SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        if (PlayerPrefs.GetInt("Level") >= (SceneManager.sceneCountInBuildSettings) - 1)
+        {
+            PlayerPrefs.SetInt("Level", PlayerPrefs.GetInt("Level", 1) + 1);
+            var i = Random.Range(2, SceneManager.sceneCountInBuildSettings);
+            PlayerPrefs.SetInt("ThisLevel", i);
+            SceneManager.LoadScene(i);
+        }
+        else
+        {
+            PlayerPrefs.SetInt("Level", SceneManager.GetActiveScene().buildIndex + 1);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        }
+
         Vibration.Vibrate(VibrationIntensity);
     }
 
@@ -104,6 +101,4 @@ public class UiManager : MonoBehaviour
         get => mainControl ??= FindObjectOfType<Truck>();
         set => mainControl = value;
     }
-
-    private bool IsFuelLow => FuelGauge.value <= LowFuelThreshold;
 }

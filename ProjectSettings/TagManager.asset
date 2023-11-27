@@ -13,6 +13,9 @@ TagManager:
   - Obs
   - Moveback
   - FuelStation
+  - ground
+  - coin
+  - People
   layers:
   - Default
   - TransparentFX
@@ -23,7 +26,7 @@ TagManager:
   - Nav
   - Player
   - MiniMap
-  - 
+  - AICARS
   - 
   - 
   - 

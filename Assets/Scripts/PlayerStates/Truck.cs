@@ -10,7 +10,7 @@ public class Truck : MonoBehaviour
     [Space(20)] public DynamicJoystick joystick;
     [Space(10)] [Range(0, 190)] public int maxSpeed = 90;
     [Range(10, 120)] public int maxReverseSpeed = 45;
-    [Range(1, 50)] public int accelerationMultiplier = 2;
+    [Range(1, 500)] public int accelerationMultiplier = 2;
     [Space(10)] [Range(10, 90)] public int maxSteeringAngle = 27;
     [Range(0.1f, 1f)] public float steeringSpeed = 0.5f;
     [Space(10)] [Range(100, 600)] public int brakeForce = 350;
@@ -33,7 +33,9 @@ public class Truck : MonoBehaviour
     [Space(20)] [Space(10)] public bool useUI = false;
     public Text carSpeedText;
     [Space(20)] [Space(10)] public bool useSounds = false;
+    public AudioSource carstart;
     public AudioSource carEngineSound;
+    public AudioSource Hit;
     public AudioSource tireScreechSound;
     internal float initialCarEngineSoundPitch;
     [Space(20)] [Space(10)] public bool useTouchControls = false;
@@ -75,6 +77,12 @@ public class Truck : MonoBehaviour
     internal float steeringAngle;
     public GameObject Collided_Fx;
     public GameObject BreakLight_L, BreakLight_R;
+    [SerializeField] private Sprite lowFuel;
+    [SerializeField] private Sprite fullFuel;
+    [SerializeField] private Image FuelIcon;
+    [SerializeField] private GameObject LowfuelImage;
+
+    private const float LowFuelThreshold = 0.3f;
 
     public bool Steering
     {
@@ -110,6 +118,7 @@ public class Truck : MonoBehaviour
 
     void Start()
     {
+        accelerationMultiplier = 60;
         InitialFuelLEvel();
         SwitchState(new IdleState());
         forward = true;
@@ -119,6 +128,8 @@ public class Truck : MonoBehaviour
         _GearShift = FindObjectOfType<GearShift>();
         WheelSetup();
         JoyStickDesider();
+        FuelIcon = GameObject.Find("Fuel Symbol").GetComponent<Image>();
+        LowfuelImage = GameObject.Find("LowFuel Img");
         if (carEngineSound != null)
         {
             initialCarEngineSoundPitch = carEngineSound.pitch;
@@ -133,9 +144,11 @@ public class Truck : MonoBehaviour
 
         if (useSounds)
         {
+            carstart.Play();
             InvokeRepeating("CarSounds", 0f, 0.1f);
         }
-        else if (!useSounds)
+
+        if (!useSounds)
         {
             if (carEngineSound != null)
             {
@@ -197,6 +210,7 @@ public class Truck : MonoBehaviour
     {
         // Perform actions based on the current state
         currentState.UpdateState();
+        CheckFuelStatus();
         if (!HandleTapToPlay()) return;
     }
 
@@ -358,6 +372,7 @@ public class Truck : MonoBehaviour
         if (other.gameObject.CompareTag("Obs"))
         {
             Instantiate(Collided_Fx, other.contacts[0].point, Quaternion.identity);
+            Hit.Play();
         }
     }
 
@@ -366,6 +381,14 @@ public class Truck : MonoBehaviour
         if (other.gameObject.CompareTag("DropPoint"))
         {
             DOVirtual.DelayedCall(.8f, (() => { SwitchState(new DroppingGoodsState()); }));
+        }
+
+        if (other.gameObject.CompareTag("People"))
+        {
+            other.GetComponent<people>().movespeed = 0;
+            other.GetComponent<Animator>().applyRootMotion = true;
+            other.GetComponent<Animator>().SetTrigger("Hitcar");
+            DOVirtual.DelayedCall(.5f, () => GameEvents.InvokeGameLose(-1));
         }
     }
 
@@ -414,7 +437,6 @@ public class Truck : MonoBehaviour
         SliderColorDesider();
     }
 
-    // ReSharper disable Unity.PerformanceAnalysis
     internal void SaveRequriedData()
     {
         var FuelLevel = FuelGage.value;
@@ -434,6 +456,27 @@ public class Truck : MonoBehaviour
         FuelGage.value = 1;
         SliderColorDesider();
     }
+
+    private void CheckFuelStatus()
+    {
+        FuelIcon.sprite = IsFuelLow ? lowFuel : fullFuel;
+
+        var fuelIconAnimator = FuelIcon.GetComponent<Animator>();
+        if (fuelIconAnimator != null)
+        {
+            fuelIconAnimator.enabled = IsFuelLow;
+            LowfuelImage.SetActive(true);
+        }
+
+        if (!IsFuelLow)
+        {
+            LowfuelImage.SetActive(false);
+
+            FuelIcon.rectTransform.localScale = Vector3.one;
+        }
+    }
+
+    private bool IsFuelLow => FuelGage.value <= LowFuelThreshold;
 }
 
 public interface ITruckState

@@ -34,11 +34,14 @@ public class people : MonoBehaviour
             else if (back == true)
             {
                 transform.DORotate(
-                    new Vector3(transform.rotation.x, forwardRotation,transform.rotation.z),
+                    new Vector3(transform.rotation.x, forwardRotation, transform.rotation.z),
                     .01f);
                 back = false;
-
             }
         }
+
+       
     }
+
+    
 }

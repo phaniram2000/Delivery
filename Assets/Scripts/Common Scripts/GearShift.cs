@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 public class GearShift : MonoBehaviour
@@ -12,6 +14,11 @@ public class GearShift : MonoBehaviour
     {
         get { return moveback; }
         private set { moveback = value; }
+    }
+
+    private void OnEnable()
+    {
+        
     }
 
     void Start()
@@ -46,6 +53,7 @@ public class GearShift : MonoBehaviour
             }
         }
     }
+    public MMFeedbacks DamageFeedback;
 
     private void OnGearShiftButtonClicked()
     {
@@ -53,12 +61,13 @@ public class GearShift : MonoBehaviour
         {
             MoveBack = false;
             transform.DOLocalRotate(ForwardGearAngle, .3f);
+            DamageFeedback.PlayFeedbacks();            
         }
         else if (!MoveBack)
         {
             MoveBack = true;
             transform.DOLocalRotate(ReversGearAngle, .3f);
+            DamageFeedback.PlayFeedbacks();
         }
-        Vibration.Vibrate(30);
     }
 }
