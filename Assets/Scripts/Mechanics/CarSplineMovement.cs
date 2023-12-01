@@ -6,7 +6,7 @@ using Dreamteck.Splines;
 public class CarSplineMovement : MonoBehaviour
 {
     public SplineFollower spline; // Assuming you have a Dreamteck spline component
-    public float speed = 5f;
+    public float speed;
     private float distanceTravelled = 0f;
     public bool isPaused = false;
     public float obstacleDetectionDistance = 5f; // Adjust this value based on your needs
@@ -21,7 +21,7 @@ public class CarSplineMovement : MonoBehaviour
     {
         if (!isPaused)
         {
-            spline.followSpeed = Mathf.Lerp(0, speed, 1);
+            spline.followSpeed = speed;
         }
 
         if (isPaused)
@@ -45,7 +45,6 @@ public class CarSplineMovement : MonoBehaviour
         // Raycast to the center
         if (Physics.Raycast(transform.position, rayDirection, out hitCenter, obstacleDetectionDistance, obstacleLayer))
         {
-            Debug.Log(hitCenter.transform.name);
             // Pause movement if an obstacle is detected
             PauseMovement();
             return; // No need to check other directions if the center ray hits an obstacle
@@ -56,7 +55,6 @@ public class CarSplineMovement : MonoBehaviour
         Debug.DrawRay(transform.position, leftDirection * obstacleDetectionDistance, Color.red);
         if (Physics.Raycast(transform.position, leftDirection, out hitLeft, obstacleDetectionDistance, obstacleLayer))
         {
-            Debug.Log(hitLeft.transform.name);
             // Pause movement if an obstacle is detected
             PauseMovement();
             return; // No need to check other directions if the left ray hits an obstacle
@@ -67,7 +65,6 @@ public class CarSplineMovement : MonoBehaviour
         Debug.DrawRay(transform.position, rightDirection * obstacleDetectionDistance, Color.red);
         if (Physics.Raycast(transform.position, rightDirection, out hitRight, obstacleDetectionDistance, obstacleLayer))
         {
-            Debug.Log(hitRight.transform.name);
             // Pause movement if an obstacle is detected
             PauseMovement();
             return; // No need to check other directions if the right ray hits an obstacle

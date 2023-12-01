@@ -1812,7 +1812,7 @@ PrefabInstance:
     - target: {fileID: 1378922297957006227, guid: 0c439645928b6fc489183abc72ad7f96,
         type: 3}
       propertyPath: m_Layer
-      value: 6
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 1378922297957006227, guid: 0c439645928b6fc489183abc72ad7f96,
         type: 3}
@@ -28530,11 +28530,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 1.72
       objectReference: {fileID: 0}
+    - target: {fileID: 5125923238532103566, guid: f6bce287062978c4ea5d4e651614bacc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8767156709365127918, guid: f6bce287062978c4ea5d4e651614bacc,
         type: 3}
       propertyPath: m_Name
       value: Hummer
       objectReference: {fileID: 0}
+    - target: {fileID: 9105291800305202645, guid: f6bce287062978c4ea5d4e651614bacc,
+        type: 3}
+      propertyPath: target
+      value: 
+      objectReference: {fileID: 1942319882}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -44915,8 +44925,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 954941534}
-  m_LocalRotation: {x: 0.29887396, y: -0.32701063, z: 0.1098442, w: 0.8897599}
-  m_LocalPosition: {x: 140.78807, y: 36.491325, z: 153.79555}
+  m_LocalRotation: {x: 0.29887384, y: -0.32701054, z: 0.10984411, w: 0.88976}
+  m_LocalPosition: {x: 140.78807, y: 36.491333, z: 153.79555}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -88409,8 +88419,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1936163582}
-  m_LocalRotation: {x: 0.29887396, y: -0.32701063, z: 0.1098442, w: 0.8897599}
-  m_LocalPosition: {x: 140.78807, y: 36.491325, z: 153.79555}
+  m_LocalRotation: {x: 0.29887384, y: -0.32701054, z: 0.10984411, w: 0.88976}
+  m_LocalPosition: {x: 140.78807, y: 36.491333, z: 153.79555}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

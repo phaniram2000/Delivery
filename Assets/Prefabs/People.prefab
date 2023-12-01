@@ -330,6 +330,11 @@ MonoBehaviour:
   movespeed: 3
   forwardRotation: 0
   Backrotation: 180
+  isPaused: 0
+  obstacleDetectionDistance: 5
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 640
 --- !u!1001 &722832142435818438
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -512,6 +517,11 @@ MonoBehaviour:
   movespeed: 3
   forwardRotation: 0
   Backrotation: 180
+  isPaused: 0
+  obstacleDetectionDistance: 5
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 640
 --- !u!4 &973548816259251245 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e6bbbc26373ae344c9ec9a49324a2c1e,
@@ -706,3 +716,8 @@ MonoBehaviour:
   movespeed: 3
   forwardRotation: 0
   Backrotation: 180
+  isPaused: 0
+  obstacleDetectionDistance: 5
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 640

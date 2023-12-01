@@ -101,4 +101,9 @@ public class UiManager : MonoBehaviour
         get => mainControl ??= FindObjectOfType<Truck>();
         set => mainControl = value;
     }
+
+    public void FindNearestFuelStation()
+    {
+        mainControl.FindNearestFuel();
+    }
 }
