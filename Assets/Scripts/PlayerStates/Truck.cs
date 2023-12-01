@@ -81,7 +81,8 @@ public class Truck : MonoBehaviour
     [SerializeField] private Sprite fullFuel;
     [SerializeField] private Image FuelIcon;
     [SerializeField] private GameObject LowfuelImage;
-
+    public LineRenderer FuelGPS_LR;
+    public GpsSystem _gpsSystem;
     private const float LowFuelThreshold = 0.3f;
 
     public bool Steering
@@ -473,6 +474,21 @@ public class Truck : MonoBehaviour
             LowfuelImage.SetActive(false);
 
             FuelIcon.rectTransform.localScale = Vector3.one;
+        }
+    }
+
+    private bool activelinerender;
+
+    public void FindNearestFuel()
+    {
+        if (FuelGPS_LR.enabled)
+        {
+            FuelGPS_LR.enabled = false;
+        }
+        else
+        {
+            FuelGPS_LR.enabled = true;
+            _gpsSystem.SetShortestDistanceTarget();
         }
     }
 

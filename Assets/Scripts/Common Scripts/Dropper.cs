@@ -14,6 +14,7 @@ public class Dropper : MonoBehaviour
     public Animator Customer_Animiation;
     public Transform[] dropPoints;
     public GameObject[] objectsToDeliver;
+    public ParticleSystem Parked, ToPark, Smoke;
 
     private void Start()
     {
@@ -25,9 +26,13 @@ public class Dropper : MonoBehaviour
         if (!MultipleObjects)
         {
             package.transform.parent = null;
+
             package.GetComponent<Rigidbody>().isKinematic = true;
             package.GetComponent<Collider>().isTrigger = true;
-            package.transform.DOJump(DropPoint.transform.position, 10, 1, .7f).SetEase(Ease.Flash);
+            package.transform.DOJump(DropPoint.transform.position, 10, 1, .7f).OnComplete((() =>
+            {
+                Smoke?.Play();
+            }));
         }
         else if (MultipleObjects)
         {
@@ -38,6 +43,9 @@ public class Dropper : MonoBehaviour
                 objectsToDeliver[i].GetComponent<Collider>().isTrigger = true;
             }
         }
+
+        ToPark.gameObject.SetActive(false);
+        Parked.Play();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -58,6 +66,8 @@ public class Dropper : MonoBehaviour
             }
             else
             {
+                ToPark.gameObject.SetActive(false);
+                Parked.Play();
                 DOVirtual.DelayedCall(1.5f, (() => { GameEvents.InvokeGameWin(); }));
             }
         }
